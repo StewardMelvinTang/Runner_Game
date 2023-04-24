@@ -56,9 +56,9 @@ class Background():
         self.scroll_speed = 2
         self.x = 0
     
-    def scroll_background(self):
+    def scroll_background(self, game_speed):
         if self.background and self.ground:
-            self.x -= self.scroll_speed
+            self.x -= self.scroll_speed * game_speed
             if self.x <= -self.WINDOW_WIDTH: self.x = 0
             
             self.surface.blit(self.background, self.bg_left.move(self.x, 0))
@@ -67,15 +67,16 @@ class Background():
             self.surface.blit(self.ground, self.ground_right.move(self.x, 0))
             
 class Obstacle(pygame.sprite.Sprite):
-    def __init__ (self, type, surface, WINDOW_WIDTH, WINDOW_HEIGHT):
+    def __init__ (self, type, surface, WINDOW_WIDTH, WINDOW_HEIGHT, game_speed):
         super().__init__()
+        self.game_speed = game_speed
         self.surface = surface
         self.WINDOW_WIDTH = WINDOW_WIDTH
         self.WINDOW_HEIGHT = WINDOW_HEIGHT
         
         if type == "fly":
             self.sprite_size = (60,30)
-            self.speed = 0.25
+            self.speed = 0.25 * game_speed
             fly_frame_1 = pygame.image.load("graphics\Fly\Fly_01.png").convert_alpha()
             fly_frame_2 = pygame.image.load("graphics\Fly\Fly_02.png").convert_alpha()
             self.frames = [fly_frame_1, fly_frame_2]
@@ -83,7 +84,7 @@ class Obstacle(pygame.sprite.Sprite):
         
         elif type == "slime":
             self.sprite_size = (60,30)
-            self.speed = 0.1
+            self.speed = 0.1 * game_speed
             slime_frame_1 = pygame.image.load("graphics\Slime\Slime_01.png").convert_alpha()
             slime_frame_2 = pygame.image.load("graphics\Slime\Slime_02.png").convert_alpha()
             self.frames = [slime_frame_1, slime_frame_2]
@@ -103,7 +104,7 @@ class Obstacle(pygame.sprite.Sprite):
     
     def update(self):
         self.animation_state()
-        self.rect.x -= random.randint(3, 5)
+        self.rect.x -= random.randint(3, 5) * self.game_speed
         self.destroy()
         
     def destroy(self):
@@ -162,15 +163,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.gravity
         if self.rect.bottom >= self.WINDOW_HEIGHT - 60: self.rect.bottom = self.WINDOW_HEIGHT - 60
     
-    def animation_state(self):
+    def animation_state(self, game_speed):
         if self.rect.bottom < self.WINDOW_HEIGHT - 60:
             self.image = self.player_jump
         else:
-            self.player_index += 0.1
+            self.player_index += 0.1 * game_speed
             if self.player_index >= len(self.player_walks): self.player_index = 0
             self.image = self.player_walks[int(self.player_index)] 
             
-    def update(self):
+    def update(self, game_speed):
         self.player_input()
         self.apply_gravity()
-        self.animation_state()
+        self.animation_state(game_speed)

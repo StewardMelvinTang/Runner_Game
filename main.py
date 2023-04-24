@@ -27,6 +27,7 @@ game_active = False
 iscredit_menu_showed = False
 start_time = 0
 score = 0
+game_speed = 1
 
 pygame.init() #Initialize PyGame (A must)
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT)) #Set Window Resolution
@@ -69,9 +70,10 @@ player.add(Player(screen, WINDOW_WIDTH, WINDOW_HEIGHT))
 
 obstacle_group = pygame.sprite.Group()
 
+
 #Timer
 obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 2500)
+pygame.time.set_timer(obstacle_timer, 2250)
 
 menu_button1 = Button(1, "Play", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 40, 200, 64, small_font_20)
 menu_button2 = Button(2, "i", 30, WINDOW_HEIGHT - 40, 65, 65, small_font_20)
@@ -91,7 +93,16 @@ while True:
             
         if game_active:                    
             if event.type == obstacle_timer:
-                obstacle_group.add(Obstacle(random.choice(["fly", "fly", "slime", "slime"]), screen, WINDOW_WIDTH, WINDOW_HEIGHT))
+                obstacle_group.add(Obstacle(random.choice(["fly", "slime", "slime", "slime"]), screen, WINDOW_WIDTH, WINDOW_HEIGHT, game_speed))
+                
+                if score >= 50:
+                    obstacle_group.add(Obstacle(random.choice(["fly", "slime", "slime", "slime"]), screen, WINDOW_WIDTH + 800, WINDOW_HEIGHT, game_speed))
+                    
+                if score >= 100:
+                    obstacle_group.add(Obstacle(random.choice(["fly", "slime", "slime", "slime"]), screen, WINDOW_WIDTH + 1600, WINDOW_HEIGHT, game_speed))
+
+                if score >= 175:
+                    obstacle_group.add(Obstacle(random.choice(["fly", "fly", "fly", "slime"]), screen, WINDOW_WIDTH + 1600, WINDOW_HEIGHT, game_speed))
 
         else:
             mouse_pos = pygame.mouse.get_pos()
@@ -148,28 +159,29 @@ while True:
                         menu_button.pressed = False
                     for credit_button in credit_buttons:
                         credit_button.pressed = False            
-                    
-        
-    
-        
-    if game_active:
-        background.scroll_background()
+
+    if game_active:        
+        background.scroll_background(game_speed)
     
         score = display_score()
         
         player.draw(screen)
-        player.update()
+        player.update(game_speed)
         
         obstacle_group.draw(screen)
         obstacle_group.update()
         
         game_active = collision_sprite()
+        
+        if game_speed < 3.0:
+            game_speed += 0.0005
 
     else:
         #Intro / Mainmenu Screen
         screen.blit(bg, (0,0))
         screen.blit(ground, (0,WINDOW_HEIGHT - 60))
         player_gravity = 0
+        game_speed = 1
         
         if iscredit_menu_showed:
             for button in credit_buttons:
