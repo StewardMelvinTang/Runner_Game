@@ -2,6 +2,7 @@ import pygame
 from sys import exit
 import random
 from math import sin, pi
+import webbrowser
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -151,13 +152,15 @@ class Button():
         self.pressed_image = pygame.transform.scale(self.pressed_image, (self.width, self.height))
         self.phase = 0
         self.phase_add = 0.1
+        self.pressed = False
 
         
     def draw_button(self, surface):
-        self.rect = self.image.get_rect(center=(self.x, self.y + self.phase))
-        surface.blit(self.image, self.rect)
+        imgtodraw = self.pressed_image if self.pressed else self.image
+        self.rect = imgtodraw.get_rect(center=(self.x, self.y + self.phase))
+        surface.blit(imgtodraw, self.rect)
         text = self.font.render(self.text, False, self.text_color)
-        surface.blit(text, (self.x - text.get_width() / 2, self.y - text.get_height() / 2 - 5))
+        surface.blit(text, (self.x - text.get_width() / 2, self.y - text.get_height() / 2 - 5 + self.phase ))
         
         #floating animation
         self.phase += self.phase_add
@@ -165,10 +168,8 @@ class Button():
             self.phase_add = -0.1
         if self.phase <= 0.0: 
             self.phase_add = 0.1
-            
-    def is_clicked(self):
-        
-                                    
+
+                                   
 def display_score():
     if game_active:
         current_time = int(pygame.time.get_ticks() / 1000) * 2 - start_time
@@ -177,6 +178,7 @@ def display_score():
         screen.blit(score_surface, score_rect)
         
     return current_time
+
 def collision_sprite():
     if pygame.sprite.spritecollide(player.sprite, obstacle_group, False):
         obstacle_group.empty()
@@ -187,6 +189,7 @@ MAX_FRAMERATE = 60
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 400
 game_active = False
+iscredit_menu_showed = False
 start_time = 0
 score = 0
 
@@ -203,13 +206,18 @@ ground = pygame.image.load("graphics\Ground.jpg").convert()
 ground = pygame.transform.scale(ground, (800, 60))
 
 small_font_20 = pygame.font.Font("font\Pixeled.ttf", 20)
+small_font_14 = pygame.font.Font("font\Pixeled.ttf", 14)
 big_font_30 = pygame.font.Font("font\Pixeled.ttf", 30)
 
 #Title screen Text
 titlescreen_textsurface = big_font_30.render("Runner Game", False, "Black")
 titlescreen_text_rect = titlescreen_textsurface.get_rect(center=(WINDOW_WIDTH / 2, 50))
-titlescreen_pressSPACE_textsurface = small_font_20.render("Press Space to Start", False, "darkgrey")
-titlescreen_pressSPACE_rect = titlescreen_pressSPACE_textsurface.get_rect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 50))
+
+#Credit Text
+credit_text_title = big_font_30.render("Credit", False, "Black")
+credit_text = small_font_14.render("Made by Steward Melvin Tang with love", False, "Black")
+credit_text2 = small_font_14.render("Uses PyGame library, Trevor Lentz's Music,", False, "Black")
+credit_text3 = small_font_14.render("and  Clear Code's Youtube Video", False, "Black")
 
 #Background Music
 BGM = pygame.mixer.Sound("audio\Lines of Code.mp3").play(loops=-1)
@@ -225,7 +233,14 @@ obstacle_group = pygame.sprite.Group()
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer, 2500)
 
-button1 = Button(1, "Play", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 50, 200, 64, small_font_20)
+menu_button1 = Button(1, "Play", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 40, 200, 64, small_font_20)
+menu_button2 = Button(2, "i", 30, WINDOW_HEIGHT - 40, 65, 65, small_font_20)
+menu_button3 = Button(1, "Exit", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 105, 200, 64, small_font_20)
+
+credit_button1 = Button(2, "X", 30, 35, 65, 65, small_font_20)
+credit_button2 = Button(1, "Github", WINDOW_WIDTH / 2, WINDOW_HEIGHT - 100, 200, 64, small_font_14)
+menu_buttons = [menu_button1, menu_button2, menu_button3]
+credit_buttons = [credit_button1, credit_button2]
 
 while True:
     #Handle Quit Input
@@ -240,9 +255,54 @@ while True:
 
         else:
             #Input Key If the Game wasn't active
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                game_active = True
-                start_time = int(pygame.time.get_ticks() / 1000) - start_time
+            #if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            mouse_pos = pygame.mouse.get_pos()
+            
+            if iscredit_menu_showed:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in credit_buttons:
+                        if button.rect.collidepoint(event.pos):
+                            button.pressed = True
+                
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if credit_button1.rect.collidepoint(event.pos):
+                        game_active = False
+                        iscredit_menu_showed = False
+                    if credit_button2.rect.collidepoint(event.pos):
+                        webbrowser.open("https://github.com/StewardMelvinTang/Runner_Game")
+                    
+                    for menu_button in menu_buttons:
+                        menu_button.pressed = False
+                    for credit_button in credit_buttons:
+                        credit_button.pressed = False                          
+                        
+            else:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in menu_buttons:
+                        if button.rect.collidepoint(event.pos):
+                            button.pressed = True
+                    
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if menu_button1.rect.collidepoint(event.pos):
+                        #Button Play is Clicked
+                        game_active = True
+                        start_time = int(pygame.time.get_ticks() / 1000) * 2 - start_time
+                        
+                    if menu_button2.rect.collidepoint(event.pos):
+                        #Button Credit is Clicked
+                        game_active = False
+                        iscredit_menu_showed = True
+                        
+                    if menu_button3.rect.collidepoint(event.pos):
+                        #Quit Game is Clicked
+                        pygame.quit()
+                        exit()                
+                                
+                    for menu_button in menu_buttons:
+                        menu_button.pressed = False
+                    for credit_button in credit_buttons:
+                        credit_button.pressed = False            
+                    
         
     
         
@@ -265,15 +325,26 @@ while True:
         screen.blit(ground, (0,WINDOW_HEIGHT - 60))
         player_gravity = 0
         
-        if (not score == 0):
-            score_text = small_font_20.render(f"Your Score: {score}", False, "Black")
-            score_text_rect = score_text.get_rect(center = (WINDOW_WIDTH / 2, 100))
-            screen.blit(score_text, score_text_rect)
+        if iscredit_menu_showed:
+            for button in credit_buttons:
+                button.draw_button(screen)
             
-        button1.draw_button(screen)
-        
-        screen.blit(titlescreen_textsurface, titlescreen_text_rect)
-        screen.blit(titlescreen_pressSPACE_textsurface, titlescreen_pressSPACE_rect)
+            screen.blit(credit_text_title, (WINDOW_WIDTH / 2 - credit_text_title.get_width() / 2 , -10))
+            screen.blit(credit_text, (WINDOW_WIDTH / 2 - credit_text.get_width() / 2 , 100))
+            screen.blit(credit_text2, (WINDOW_WIDTH / 2 - credit_text2.get_width() / 2 , 160))
+            screen.blit(credit_text3, (WINDOW_WIDTH / 2 - credit_text3.get_width() / 2 , 200))
+            
+        else:
+            if (not score == 0):
+                score_text = small_font_20.render(f"Your Score: {score}", False, "Black")
+                score_text_rect = score_text.get_rect(center = (WINDOW_WIDTH / 2, 100))
+                screen.blit(score_text, score_text_rect)
+                
+            for button in menu_buttons:
+                button.draw_button(screen)
+            
+            screen.blit(titlescreen_textsurface, titlescreen_text_rect)
+
 
     #Update the Display
     pygame.display.update()
