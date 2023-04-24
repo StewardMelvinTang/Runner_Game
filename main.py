@@ -58,6 +58,11 @@ credit_text3 = small_font_14.render("and  Clear Code's Youtube Video", False, "B
 BGM = pygame.mixer.Sound("audio\Lines of Code.mp3").play(loops=-1)
 BGM.set_volume(0.35)
 
+pressed_sound = pygame.mixer.Sound(r"audio\button_press.wav")
+pressed_sound.set_volume(0.25)
+clicked_sound = pygame.mixer.Sound(r"audio\button_click.wav")
+clicked_sound.set_volume(0.25)
+
 #Groups
 player = pygame.sprite.GroupSingle()
 player.add(Player(screen, WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -89,8 +94,6 @@ while True:
                 obstacle_group.add(Obstacle(random.choice(["fly", "fly", "slime", "slime"]), screen, WINDOW_WIDTH, WINDOW_HEIGHT))
 
         else:
-            #Input Key If the Game wasn't active
-            #if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             mouse_pos = pygame.mouse.get_pos()
             
             if iscredit_menu_showed:
@@ -98,13 +101,17 @@ while True:
                     for button in credit_buttons:
                         if button.rect.collidepoint(event.pos):
                             button.pressed = True
+                            
+                            pressed_sound.play()
                 
                 if event.type == pygame.MOUSEBUTTONUP:
                     if credit_button1.rect.collidepoint(event.pos):
                         game_active = False
                         iscredit_menu_showed = False
+                        clicked_sound.play()
                     if credit_button2.rect.collidepoint(event.pos):
                         webbrowser.open("https://github.com/StewardMelvinTang/Runner_Game")
+                        clicked_sound.play()
                     
                     for menu_button in menu_buttons:
                         menu_button.pressed = False
@@ -116,19 +123,23 @@ while True:
                     for button in menu_buttons:
                         if button.rect.collidepoint(event.pos):
                             button.pressed = True
+                            pressed_sound.play()
                     
                 if event.type == pygame.MOUSEBUTTONUP:
                     if menu_button1.rect.collidepoint(event.pos):
                         #Button Play is Clicked
                         game_active = True
                         start_time = int(pygame.time.get_ticks() / 1000) * 2 - start_time
+                        clicked_sound.play()
                         
                     if menu_button2.rect.collidepoint(event.pos):
                         #Button Credit is Clicked
                         game_active = False
                         iscredit_menu_showed = True
+                        clicked_sound.play()
                         
                     if menu_button3.rect.collidepoint(event.pos):
+                        clicked_sound.play()
                         #Quit Game is Clicked
                         pygame.quit()
                         exit()                

@@ -11,7 +11,7 @@ class Button():
         self.text_color = "Black"
         self.font = font
         self.btn_type = btn_type
-        
+
         if btn_type == 1: 
             self.image = pygame.image.load(r"graphics\UI\Button_01.png").convert_alpha()
             self.pressed_image = pygame.image.load(r"graphics\UI\Button_01_Pressed.png").convert_alpha()
